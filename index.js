@@ -7,6 +7,9 @@ var settings = {
 var admin = require("firebase-admin");
 
 var Ledcomment = '1';
+
+var record_index = 0;
+
 setInterval(function() {
   Ledcomment = (Ledcomment === '1')?'0':'1';
   server.publish({topic: 'LEDToggle', payload: Ledcomment});
@@ -20,8 +23,8 @@ admin.initializeApp({
   databaseURL: "https://smart-conditioner.firebaseio.com"
 });
 
-var db = admin.database().ref('node-client');
-var messRef = db.child('message');
+var db = admin.database().ref();
+// var messRef = db.child('message');
 
 //here we start mosca
 var server = new mosca.Server(settings);
@@ -41,10 +44,15 @@ server.on('clientConnected', function(client) {
 // fired when a message is received
 server.on('published', function(packet, client) {
   if (packet.topic == "ButtonValue"){
-    messRef.push({
-      buttonState: packet.payload.toString(),
-      ledValue: Ledcomment
+    db.update({index: record_index.toString()});
+    db.push({
+      time: "unknown",
+      remote: packet.payload.toString(),
+      indoor: Ledcomment,
+      outdoor: Ledcomment,
+      index: record_index
     });
+    record_index++;
   }
   console.log('Published : ', packet.topic, ' || ', packet.payload.toString());
 });
