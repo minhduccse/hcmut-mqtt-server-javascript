@@ -17,7 +17,7 @@ var serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://assiot-95a14.firebaseio.com"
+  databaseURL: "https://smart-conditioner.firebaseio.com"
 });
 
 var db = admin.database().ref('node-client');
@@ -33,7 +33,7 @@ function setup() {
   console.log('Mosca server is up and running')
 }
  
-// fired whena  client is connected
+// fired when a client is connected
 server.on('clientConnected', function(client) {
   console.log('client connected', client.id);
 });
