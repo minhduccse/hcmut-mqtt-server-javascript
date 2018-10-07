@@ -12,11 +12,11 @@ int tempButton = 0;
 char msg[100];
 
   //wifi settings
-  const char* wifiSsid = "K45VD";
-  const char* wifiPassword = "sR4UuclN";
+  const char* wifiSsid = "Raspberry Pi 3";
+  const char* wifiPassword = "bkumtce16";
 
   //mqtt settings
-  const char* mqttHost = "10.42.0.1";
+  const char* mqttHost = "192.168.0.101";
   const int mqttPort = 1883;
 
 void setup() {
