@@ -8,7 +8,12 @@ PubSubClient mqttClient(wifiConnection);
 
 int Time_counter = 0;
 int buttonState = 0;
-int tempButton = 0;
+
+enum {INIT, STATE_0, STATE_01, STATE_010};
+
+int signal_button;
+int state = INIT;
+
 char msg[100];
 
   //wifi settings
@@ -104,11 +109,32 @@ void loop() {
       }
     }
 
-    tempButton = digitalRead(BUTTON);
-    if (tempButton != buttonState){
-      buttonState = tempButton;
-      snprintf (msg, 75, "%d", tempButton);
+  switch(state){
+    case INIT:
+      state = STATE_0;
+      break;
+    case STATE_0:
+      signal_button = digitalRead(BUTTON);
+      if(!signal_button) state = STATE_01;
+      break;
+    case STATE_01:
+      signal_button = digitalRead(BUTTON);
+      if(signal_button) state = STATE_010;
+      break;
+    case STATE_010:
+      signal_button = digitalRead(BUTTON);
+      if(!signal_button) buttonState = 1;
+      break;
+    default:
+      state = INIT;
+      break;
+  }
+
+    if (buttonState){
+      snprintf (msg, 75, "%d", 1);
       mqttClient.publish("ButtonValue", msg);
+      buttonState = 0;
+      state = INIT;
     }
   
     mqttClient.loop();
