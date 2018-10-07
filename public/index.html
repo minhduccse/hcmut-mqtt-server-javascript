@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="https://unpkg.com/mqtt@2.18.8/dist/mqtt.min.js"></script>
+<title>Title of the document</title>
+</head>
+
+<body>
+Content of the document......
+</body>
+
+<script>
+    var client  = mqtt.connect('ws://10.42.0.1:1883');
+
+    setInterval(function() {
+        client.publish('myTopic', 'Hello mqtt');
+        console.log('Message Sent');
+        }, 5000);
+</script>
+
+</html> 
