@@ -46,7 +46,7 @@ server.on('published', function(packet, client) {
       ledValue: Ledcomment
     });
   }
-  console.log('Published : ', packet.topic, ' || ',packet.payload.toString());
+  console.log('Published : ', packet.topic, ' || ', packet.payload.toString());
 });
  
 // fired when a client subscribes to a topic
