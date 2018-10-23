@@ -1,13 +1,20 @@
 #include <ESP8266WiFi.h>
 #include "PubSubClient.h"
+#include <dht.h> 
+#include <Wire.h>    
+#include <LiquidCrystal_I2C.h>
 #define LED D0
 #define BUTTON D1
-
+#define DHTPIN D3; 
+#define readtime  500
+dht DHT;
+ 
 WiFiClient wifiConnection;
 PubSubClient mqttClient(wifiConnection);
 
 int Time_counter = 0;
 int buttonState = 0;
+int TEMPERATURE=27;
 
 enum {INIT, STATE_0, STATE_01, STATE_010};
 
@@ -27,9 +34,12 @@ char msg[100];
 void setup() {
     pinMode(LED, OUTPUT);
     pinMode(BUTTON, INPUT);
+    pinMode(DHTPIN,INPUT);
+    
     // put your setup code here, to run once
     Serial.begin(115200);
-
+    lcd.init(); //initialize the lcd
+    lcd.backlight(); //open the backlight 
     //print what the programme is connecting to
     Serial.print("Connecting to ");
     Serial.println(wifiSsid);
@@ -54,6 +64,9 @@ void setup() {
     mqttClient.setServer(mqttHost, mqttPort);
 
     //set the callback when the programme recieves a callback
+    
+    //mqttClient.subscribe("LEDToggle");
+    mqttClient.subscribe("TempAdjust");
     mqttClient.setCallback(callback);
 
     while (!mqttClient.connected()) {
@@ -69,7 +82,6 @@ void setup() {
       }
     }
 
-    mqttClient.subscribe("LEDToggle");
 }
 
 void callback(char *topic, byte *payload, unsigned int length) {
@@ -87,12 +99,26 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
     Serial.println(String(message_buff));
     
-    if (String(message_buff) == "1"){
+    /*if (String(message_buff) == "1"){
       digitalWrite(LED,1);  
     }
     else{
        digitalWrite(LED,0);
-    }
+    }*/
+  if(topic=="TempAdjust"){
+      Serial.print("New temperature: ");
+      if(messageTemp == "1"){
+        if(TEMPERATURE<37)
+          TEMPERATURE++;
+      }
+      else
+        if(TEMPERATURE>17){
+          TEMPERATURE--;
+        }
+        Serial.println(TEMPERATURE);
+        snprintf (msg, 75, "%d",TEMPERATURE);
+        mqttClient.publish("ButtonValue", msg); 
+  }
 }
 
 void loop() {
@@ -128,6 +154,13 @@ void loop() {
     default:
       state = INIT;
       break;
+  }
+  Time_counter++;
+  if(Time_counter==500){
+    Time_counter=0;
+    DHT.read11(DHTPIN);
+    snprintf (msg, 75, "%d", (int)(DHT.temperature)));
+    mqttClient.publish("TempSensor", msg);
   }
 
     if (buttonState){
