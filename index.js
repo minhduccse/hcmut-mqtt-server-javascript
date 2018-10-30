@@ -43,7 +43,7 @@ server.on('clientConnected', function(client) {
  
 // fired when a message is received
 server.on('published', function(packet, client) {
-  if (packet.topic == "ButtonValue"){
+  if (packet.topic == "TempAirConditioner"){
     db.update({index: record_index.toString()});
     db.push({
       time: "unknown",
