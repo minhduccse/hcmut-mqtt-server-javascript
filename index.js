@@ -21,7 +21,7 @@ var serviceAccount = require("./serviceAccountKey.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://smart-conditioner.firebaseio.com"
-});
+});//https://smart-conditioner.firebaseio.com
 
 var db = admin.database().ref();
 // var messRef = db.child('message');

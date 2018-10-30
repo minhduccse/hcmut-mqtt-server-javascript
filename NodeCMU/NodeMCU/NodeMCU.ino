@@ -4,14 +4,14 @@
 #include <Wire.h>    
 #include <LiquidCrystal_I2C.h>
 #define LED D0
-#define BUTTON D4   //button up
+#define BUTTON D6   //button up
 #define BUTTON1 D5  //button down
 #define DHTPIN D3
 #define readtime  500
 dht DHT;
 LiquidCrystal_I2C lcd(0x27,16,2);
 /// LED : no need
-/// BUTTON UP PIN :D4
+/// BUTTON UP PIN :D6
 /// BUTTON DOWN PIN :D5
 /// SENSOR PIN :D3
 ///SDA  D2
@@ -37,14 +37,16 @@ char msg[100];
   const char* wifiPassword = "32623741";        //"bkumtce16";
 
   //mqtt settings
-  const char* mqttHost ="192.168.1.100";        //"192.168.0.101";
+  const char* mqttHost ="192.168.1.101";        //"192.168.0.101";
   const int mqttPort = 1883;
 
 void setup() {
     pinMode(LED, OUTPUT);
     pinMode(BUTTON, INPUT);
+    pinMode(BUTTON1, INPUT);
     pinMode(DHTPIN,INPUT);
-    
+    digitalWrite(BUTTON, LOW);
+    digitalWrite(BUTTON1, LOW);
     // put your setup code here, to run once
     Serial.begin(115200);
     lcd.init(); //initialize the lcd
@@ -175,18 +177,18 @@ void loop() {
       state1 = STATE_0;
       break;
     case STATE_0:
-      signal_button = digitalRead(BUTTON);
+      signal_button = digitalRead(BUTTON1);
       if(!signal_button) {
         button1State =0;
         state1 = STATE_01;
       }
       break;
     case STATE_01:
-      signal_button = digitalRead(BUTTON);
+      signal_button = digitalRead(BUTTON1);
       if(signal_button) state1 = STATE_010;
       break;
     case STATE_010:
-      signal_button = digitalRead(BUTTON);
+      signal_button = digitalRead(BUTTON1);
       if(!signal_button) {
         button1State = 1;
         state1 = STATE_0;
@@ -203,6 +205,7 @@ void loop() {
     Time_counter=0;
     DHT.read11(DHTPIN);
     snprintf (msg, 75, "%d", (int)(DHT.temperature));
+    Serial.println(DHT.temperature);
     mqttClient.publish("TempSensor", msg);
     lcd.setCursor(0,0); 
     lcd.print(DHT.temperature);
