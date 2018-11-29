@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
+//#include <Wire.h>
 #include "PubSubClient.h"
 #include <dht.h>
-#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #define LED D0
 #define BUTTON D6  //button up
@@ -9,6 +9,7 @@
 #define DHTPIN D3
 #define readtime 500
 dht DHT;
+
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 /// LED : no need
 /// BUTTON UP PIN :D6
@@ -43,11 +44,12 @@ const char *wifiSsid = "Raspberry Pi 3";
 const char *wifiPassword = "bkumtce16";
 
 //mqtt settings
-const char *mqttHost = "192.168.1.100";
+const char *mqttHost = "192.168.43.215";
 const int mqttPort = 1883;
 
 void setup()
 {
+//  Wire.begin(D8, D7);
   pinMode(LED, OUTPUT);
   pinMode(BUTTON, INPUT);
   pinMode(BUTTON1, INPUT);
@@ -104,6 +106,10 @@ void setup()
       delay(1000);
     }
   }
+  lcd.print("Temp : ");
+  lcd.setCursor(0,1);
+  lcd.print("Control : ");
+  delay(100);
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
@@ -224,13 +230,12 @@ void loop()
   Time_counter++;
   if (Time_counter == 500)
   {
-    lcd.clear();
     Time_counter = 0;
     DHT.read11(DHTPIN);
     snprintf(msg, 75, "%d", (int)(DHT.temperature));
     Serial.println(DHT.temperature);
     mqttClient.publish("IndoorSensor", msg);
-    lcd.setCursor(0, 0);
+    lcd.setCursor(8, 0);
     lcd.print(DHT.temperature);
   }
 
@@ -242,6 +247,8 @@ void loop()
     Serial.println(TEMPERATURE);
     snprintf(msg, 75, "%d", TEMPERATURE);
     mqttClient.publish("UserControl", msg);
+    lcd.setCursor(11, 1);
+    lcd.print(TEMPERATURE);
   }
 
   if (button1State)
@@ -252,6 +259,8 @@ void loop()
     Serial.println(TEMPERATURE);
     snprintf(msg, 75, "%d", TEMPERATURE);
     mqttClient.publish("UserControl", msg);
+    lcd.setCursor(11, 1);
+    lcd.print(TEMPERATURE);
   }
 
   mqttClient.loop();
