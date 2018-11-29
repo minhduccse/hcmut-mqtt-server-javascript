@@ -6,15 +6,9 @@ var settings = {
 
 var admin = require("firebase-admin");
 
-// var Ledcomment = '1';
-
 var record_index = 0;
 
-// setInterval(function() {
-//   Ledcomment = (Ledcomment === '1')?'0':'1';
-//   server.publish({topic: 'LEDToggle', payload: Ledcomment});
-//   console.log('Message Sent');
-// }, 5000);
+var now = new Date();
 
 var serviceAccount = require("./serviceAccountKey.json");
 
@@ -24,7 +18,6 @@ admin.initializeApp({
 });
 
 var db = admin.database().ref();
-// var messRef = db.child('message');
 
 //here we start mosca
 var server = new mosca.Server(settings);
@@ -43,18 +36,34 @@ server.on('clientConnected', function(client) {
  
 // fired when a message is received
 server.on('published', function(packet, client) {
+  now = new Date();
+  
   if (packet.topic == "UserControl"){
-    db.update({index: record_index.toString()});
+    db.update({
+      index: record_index.toString(),
+      remote: packet.payload.toString()
+    });
     db.push({
-      time: "unknown",
+      time: now.toLocaleString(),
       remote: packet.payload.toString(),
-      indoor: packet.payload.toString(),
-      outdoor: packet.payload.toString(),
       index: record_index
     });
     record_index++;
   }
-  
+
+  if (packet.topic == "IndoorSensor"){
+    db.update({
+      index: record_index.toString(),
+      indoor: packet.payload.toString()
+    });
+    db.push({
+      time: now.toLocaleString(),
+      indoor: packet.payload.toString(),
+      index: record_index
+    });
+    record_index++;
+  }
+
   console.log('Published : ', packet.topic, ' || ', packet.payload.toString());
 });
  
