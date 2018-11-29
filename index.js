@@ -18,6 +18,7 @@ admin.initializeApp({
 });
 
 var db = admin.database().ref();
+const numberRecordsRef = db.child("index");
 
 //here we start mosca
 var server = new mosca.Server(settings);
@@ -27,6 +28,10 @@ server.on('ready', setup);
 // fired when the mqtt server is ready
 function setup() {
   console.log('Mosca server is up and running');
+  numberRecordsRef.on("value",  function(snapshot){
+    if(isNaN(snapshot.val())) record_index = 0;
+    else record_index = Number(snapshot.val());
+  });
 }
  
 // fired when a client is connected
@@ -37,7 +42,9 @@ server.on('clientConnected', function(client) {
 // fired when a message is received
 server.on('published', function(packet, client) {
   now = new Date();
-  
+
+  if(record_index == null) record_index = 0;
+
   if (packet.topic == "UserControl"){
     db.update({
       index: record_index.toString(),
