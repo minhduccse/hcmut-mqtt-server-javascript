@@ -6,15 +6,15 @@ var settings = {
 
 var admin = require("firebase-admin");
 
-var Ledcomment = '1';
+// var Ledcomment = '1';
 
 var record_index = 0;
 
-setInterval(function() {
-  Ledcomment = (Ledcomment === '1')?'0':'1';
-  server.publish({topic: 'LEDToggle', payload: Ledcomment});
-  console.log('Message Sent');
-}, 5000);
+// setInterval(function() {
+//   Ledcomment = (Ledcomment === '1')?'0':'1';
+//   server.publish({topic: 'LEDToggle', payload: Ledcomment});
+//   console.log('Message Sent');
+// }, 5000);
 
 var serviceAccount = require("./serviceAccountKey.json");
 
@@ -43,7 +43,7 @@ server.on('clientConnected', function(client) {
  
 // fired when a message is received
 server.on('published', function(packet, client) {
-  if (packet.topic == "TempAirConditioner"){
+  if (packet.topic == "AirControl"){
     db.update({index: record_index.toString()});
     db.push({
       time: "unknown",
@@ -54,6 +54,7 @@ server.on('published', function(packet, client) {
     });
     record_index++;
   }
+  
   console.log('Published : ', packet.topic, ' || ', packet.payload.toString());
 });
  
@@ -76,5 +77,3 @@ server.on('clientDisconnecting', function(client) {
 server.on('clientDisconnected', function(client) {
   console.log('clientDisconnected : ', client.id);
 });
-
-
