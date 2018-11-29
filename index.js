@@ -48,8 +48,8 @@ server.on('published', function(packet, client) {
     db.push({
       time: "unknown",
       remote: packet.payload.toString(),
-      indoor: Ledcomment,
-      outdoor: Ledcomment,
+      indoor: packet.payload.toString(),
+      outdoor: packet.payload.toString(),
       index: record_index
     });
     record_index++;
