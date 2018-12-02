@@ -228,7 +228,7 @@ void loop()
   }
 
   Time_counter++;
-  if (Time_counter == 500)
+  if (Time_counter == 6000)
   {
     Time_counter = 0;
     DHT.read11(DHTPIN);
