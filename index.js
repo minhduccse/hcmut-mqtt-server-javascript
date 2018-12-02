@@ -85,6 +85,15 @@ server.on('published', function(packet, client) {
 // fired when a client subscribes to a topic
 server.on('subscribed', function(topic, client) {
   console.log('subscribed : ', topic);
+
+  remoteRef.once("value", function(snapshot) {
+    var message = {
+      topic: "ServerControl",
+      payload: snapshot.val()
+    };
+    
+    server.publish(message, function(){});
+  });
 });
  
 // fired when a client unsubscribes to a topic
