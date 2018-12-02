@@ -212,7 +212,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
   }
 
   message_buff[i] = *"\0";
-  Serial.println(String(message_buff));
+  // Serial.println(String(message_buff));
 
   if (String(topic) == "ServerControl") {
     Serial.print("Server Control: ");
