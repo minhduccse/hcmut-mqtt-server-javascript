@@ -27,7 +27,7 @@ server.on('ready', setup);
 // fired when the mqtt server is ready
 function setup() {
   console.log('Mosca server is up and running');
-  numberRecordsRef.once("value",  function(snapshot){
+  numberRecordsRef.on("value",  function(snapshot){
     if(isNaN(snapshot.val())) record_index = 0;
     else record_index = Number(snapshot.val());
   });
