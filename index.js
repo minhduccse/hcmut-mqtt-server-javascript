@@ -6,7 +6,10 @@ var settings = {
 
 var admin = require("firebase-admin");
 
-var record_index = 0;
+var total_index = 0;
+var remote_index = 0;
+var indoor_index = 0;
+var outdoor_index = 0;
 
 var serviceAccount = require("./serviceAccountKey.json");
 
@@ -16,8 +19,15 @@ admin.initializeApp({
 });
 
 var db = admin.database().ref();
-const numberRecordsRef = db.child("index");
+const currentRef = db.child("current");
+const indoorRef = db.child("indoor");
+const outdoorRef = db.child("outdoor");
 const remoteRef = db.child("remote");
+const totalRef = currentRef.child("total");
+const remoteIdxRef = currentRef.child("remoteIdx");
+const indoorIdxRef = currentRef.child("indoorIdx");
+const outdoorIdxRef = currentRef.child("outdoorIdx");
+const remoteNowRef = currentRef.child("remoteNow");
 
 //here we start mosca
 var server = new mosca.Server(settings);
@@ -27,13 +37,25 @@ server.on('ready', setup);
 // fired when the mqtt server is ready
 function setup() {
   console.log('Mosca server is up and running');
-  numberRecordsRef.on("value",  function(snapshot){
-    if(isNaN(snapshot.val())) record_index = 0;
-    else record_index = Number(snapshot.val());
+  indoorIdxRef.on("value",  function(snapshot){
+    if(isNaN(snapshot.val())) indoor_index = 0;
+    else indoor_index = Number(snapshot.val());
+  });
+  outdoorIdxRef.on("value",  function(snapshot){
+    if(isNaN(snapshot.val())) outdoor_index = 0;
+    else outdoor_index = Number(snapshot.val());
+  });
+  remoteIdxRef.on("value",  function(snapshot){
+    if(isNaN(snapshot.val())) remote_index = 0;
+    else remote_index = Number(snapshot.val());
+  });
+  totalRef.on("value",  function(snapshot){
+    if(isNaN(snapshot.val())) total_index = 0;
+    else total_index = Number(snapshot.val());
   });
 }
 
-remoteRef.on("value", function(snapshot) {
+remoteNowRef.on("value", function(snapshot) {
   var message = {
     topic: "ServerControl",
     payload: snapshot.val()
@@ -51,32 +73,52 @@ server.on('clientConnected', function(client) {
 server.on('published', function(packet, client) {
   var now = new Date();
 
-  if(record_index == null) record_index = 0;
+  if(total_index == null) total_index = 0;
+  if(remote_index == null) remote_index = 0;
 
   if (packet.topic == "UserControl"){
-    db.update({
-      index: record_index.toString(),
-      remote: packet.payload.toString()
+    remote_index++;
+    total_index++;
+    currentRef.update({
+      total: total_index.toString(),
+      remoteIdx: remote_index.toString(),
+      remoteNow: packet.payload.toString()
     });
-    db.push({
+    remoteRef.push({
       time: now.toLocaleString(),
-      remote: packet.payload.toString(),
-      index: record_index
+      value: packet.payload.toString(),
+      index: remote_index
     });
-    record_index++;
   }
 
   if (packet.topic == "IndoorSensor"){
-    db.update({
-      index: record_index.toString(),
-      indoor: packet.payload.toString()
+    indoor_index++;
+    total_index++;
+    currentRef.update({
+      total: total_index.toString(),
+      indoorIdx: indoor_index.toString(),
+      indoorNow: packet.payload.toString()
     });
-    db.push({
+    indoorRef.push({
       time: now.toLocaleString(),
-      indoor: packet.payload.toString(),
-      index: record_index
+      value: packet.payload.toString(),
+      index: indoor_index
     });
-    record_index++;
+  }
+
+  if (packet.topic == "OutdoorSensor"){
+    outdoor_index++;
+    total_index++;
+    currentRef.update({
+      total: total_index.toString(),
+      outdoorIdx: outdoor_index.toString(),
+      outdoorNow: packet.payload.toString()
+    });
+    outdoorRef.push({
+      time: now.toLocaleString(),
+      value: packet.payload.toString(),
+      index: outdoor_index
+    });
   }
 
   console.log('Received : ', packet.topic, ' || ', packet.payload.toString());
