@@ -128,7 +128,7 @@ server.on('published', function(packet, client) {
 server.on('subscribed', function(topic, client) {
   console.log('subscribed : ', topic);
 
-  remoteRef.once("value", function(snapshot) {
+  remoteNowRef.once("value", function(snapshot) {
     var message = {
       topic: "ServerControl",
       payload: snapshot.val()
